@@ -1,14 +1,16 @@
-import {View, StyleSheet, Image, Pressable, Text, Animated, Platform} from "react-native";
+import {View, StyleSheet, Image, Pressable, Text, Animated, Platform, Modal} from "react-native";
 import {useState, useRef} from "react";
 import {useNavigation} from "@react-navigation/native";
 import {useDispatch} from "react-redux";
 import {logout} from "../store/authSilce";
+import AddRequestModal from "./AddRequestModal";
 
 export default function Header() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
 
     const [isIconsVisible, setIconsVisible] = useState(true);
+    const [showModalAddRequest, setShowModalAddRequest] = useState(false);
     const animationValue = useRef(new Animated.Value(0)).current;
 
     const toggleIconsVisibility = () => {
@@ -49,7 +51,10 @@ export default function Header() {
                 </Pressable>
 
                 <View style={styles.headerButtons}>
-                    <Pressable style={styles.addRequestButton} onPress={() => console.log("Add a request")}>
+                    <Pressable style={styles.addRequestButton} onPress={() => {
+                        console.log("Add a request")
+                        setShowModalAddRequest(true);
+                    }}>
                         <Text style={styles.addRequestText}>+ Add a request</Text>
                     </Pressable>
 
@@ -68,7 +73,7 @@ export default function Header() {
                 <Pressable style={styles.inboxContainer} onPress={() => {
                     console.log("Inbox")
                     toggleIconsVisibility()
-                    navigation.navigate("Example");
+                    navigation.navigate("Inbox");
                 }}>
                     <Image style={styles.icon} source={require('../images/inbox_icon.png')} resizeMode="contain"/>
                     <Text style={styles.iconText}>Inbox</Text>
@@ -91,6 +96,18 @@ export default function Header() {
                     <Text style={styles.iconText}>Logout</Text>
                 </Pressable>
             </Animated.View>
+
+            <Modal style={styles.modalScreen} visible={showModalAddRequest}
+                   onRequestClose={() => setShowModalAddRequest(false)}
+            animationType="slide" presentationStyle="formSheet">
+                <Pressable style={styles.closeModalButton} onPress={() => setShowModalAddRequest(false)}>
+                    <Image style={styles.closeModalIcon} source={require('../images/close_modal.png')}
+                           resizeMode="contain"/>
+                </Pressable>
+                <View style={styles.modalScreenAddRequestForm}>
+                    <AddRequestModal closeModal={() => setShowModalAddRequest(false)} />
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -135,7 +152,6 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         backgroundColor: '#e3e3e3',
         paddingHorizontal: 25,
-        // paddingTop: 10,
     },
     inboxContainer: {
         flexDirection: 'row',
@@ -165,4 +181,18 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: '500',
     },
+    closeModalButton: {
+        paddingHorizontal: 10,
+        paddingVertical: 10,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+    },
+    closeModalIcon: {
+        width: 30,
+        height: 30,
+    },
+    modalScreenAddRequestForm: {
+        height: '80%',
+        justifyContent: "center"
+    }
 });

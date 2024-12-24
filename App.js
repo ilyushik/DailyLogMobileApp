@@ -1,6 +1,5 @@
 import {StyleSheet, View} from 'react-native';
 import Login from "./pages/Login";
-import Example from "./pages/Example";
 import {createNativeStackNavigator} from "@react-navigation/native-stack";
 import {NavigationContainer} from '@react-navigation/native';
 import MainScreen from "./pages/MainScreen";
@@ -8,6 +7,8 @@ import {useEffect} from "react";
 import {Provider, useDispatch, useSelector} from "react-redux";
 import {store} from "./store/store";
 import { checkAuthentication } from './store/authSilce';
+import Inbox from "./pages/Inbox";
+import Team from "./pages/Team";
 
 const Stack = createNativeStackNavigator()
 
@@ -31,10 +32,14 @@ const AppNavigator = () => {
                                 options={{ headerShown: false, gestureEnabled: false }}
                             />
                             <Stack.Screen
-                                name="Example"
-                                component={Example}
+                                name="Inbox"
+                                component={Inbox}
                                 options={{ headerShown: false, gestureEnabled: false }}
                             />
+                            <Stack.Screen
+                                name="Team"
+                                component={Team}
+                                options={{ headerShown: false, gestureEnabled: false }} />
                         </>
                     ) : (
                         <Stack.Screen

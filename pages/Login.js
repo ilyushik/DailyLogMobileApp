@@ -33,12 +33,12 @@ export default function Login({ navigation }) {
 
 
         console.log({email: email, password: password});
-        const token = `${email} : ${password}`
+        const token = `${email}_${password}`
         setEmail('');
         setPassword('');
         setError({})
         await SecureStore.setItemAsync('jwt_token', token)
-        console.log(await SecureStore.getItemAsync('jwt_token'))
+        console.log(`Token: ${await SecureStore.getItemAsync('jwt_token')}`)
         dispatch(login(token))
     }
 
@@ -49,9 +49,11 @@ export default function Login({ navigation }) {
                 <View style={styles.formBlock}>
                     <TextInput style={styles.textInput} value={email} placeholder="Email" onChangeText={setEmail} />
                     {error.email && <Text style={styles.error}>{error.email}</Text>}
-                    <TextInput style={styles.textInput} secureTextEntry={true} value={password} placeholder="Password" onChangeText={setPassword} />
+                    <TextInput style={styles.textInput} secureTextEntry={true} value={password} placeholder="Password"
+                               onChangeText={setPassword} />
                     {error.password && <Text style={styles.error}>{error.password}</Text>}
-                    <TouchableOpacity style={[styles.buttonBlock, !formIsValid && styles.buttonBlockInvalid]} onPress={submitForm} disabled={!formIsValid}>
+                    <TouchableOpacity style={[styles.buttonBlock, !formIsValid && styles.buttonBlockInvalid]}
+                                      onPress={submitForm} disabled={!formIsValid}>
                         <Text style={[styles.buttonText, !formIsValid && styles.buttonTextInvalid]}>Login to account</Text>
                     </TouchableOpacity>
                 </View>
