@@ -30,6 +30,9 @@ const AppNavigator = () => {
                                 name="MainScreen"
                                 component={MainScreen}
                                 options={{ headerShown: false, gestureEnabled: false }}
+                                initialParams={{
+                                    userId: 0
+                                }}
                             />
                             <Stack.Screen
                                 name="Inbox"

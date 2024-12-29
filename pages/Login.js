@@ -6,12 +6,12 @@ import {
     View,
     TextInput,
     TouchableOpacity,
-    KeyboardAvoidingView
+    KeyboardAvoidingView, Pressable
 } from 'react-native';
 import {useState} from "react";
-import * as SecureStore from 'expo-secure-store'
 import {useDispatch} from "react-redux";
 import {login} from "../store/authSilce";
+import axios from "axios";
 
 export default function Login({ navigation }) {
     const dispatch = useDispatch();
@@ -31,15 +31,29 @@ export default function Login({ navigation }) {
             return;
         }
 
-
-        console.log({email: email, password: password});
-        const token = `${email}_${password}`
-        setEmail('');
-        setPassword('');
         setError({})
-        await SecureStore.setItemAsync('jwt_token', token)
-        console.log(`Token: ${await SecureStore.getItemAsync('jwt_token')}`)
-        dispatch(login(token))
+        console.log("Button pressed");
+
+        try {
+            const response = await axios.post(`http://localhost:8080/login`, {
+                email: email,
+                password: password,
+            })
+            dispatch(login(response.data.token))
+            console.log(response.data)
+        } catch (e) {
+            setError(e.response.data)
+        }
+
+
+        // console.log({email: email, password: password});
+        // const token = `${email}_${password}`
+        // setEmail('');
+        // setPassword('');
+        // setError({})
+        // await SecureStore.setItemAsync('jwt_token', token)
+        // console.log(`Token: ${await SecureStore.getItemAsync('jwt_token')}`)
+        // dispatch(login(token))
     }
 
     return (
@@ -47,15 +61,16 @@ export default function Login({ navigation }) {
             <View style={styles.mainBlock}>
                 <Image style={styles.image} source={require('../images/logo.png')} />
                 <View style={styles.formBlock}>
-                    <TextInput style={styles.textInput} value={email} placeholder="Email" onChangeText={setEmail} />
+                    <TextInput style={styles.textInput} value={email} placeholder="Email" onChangeText={setEmail}
+                               autoCapitalize="none"/>
                     {error.email && <Text style={styles.error}>{error.email}</Text>}
                     <TextInput style={styles.textInput} secureTextEntry={true} value={password} placeholder="Password"
-                               onChangeText={setPassword} />
+                               onChangeText={setPassword} autoCapitalize="none"/>
                     {error.password && <Text style={styles.error}>{error.password}</Text>}
-                    <TouchableOpacity style={[styles.buttonBlock, !formIsValid && styles.buttonBlockInvalid]}
+                    <Pressable style={[styles.buttonBlock, !formIsValid && styles.buttonBlockInvalid]}
                                       onPress={submitForm} disabled={!formIsValid}>
                         <Text style={[styles.buttonText, !formIsValid && styles.buttonTextInvalid]}>Login to account</Text>
-                    </TouchableOpacity>
+                    </Pressable>
                 </View>
             </View>
         </KeyboardAvoidingView>

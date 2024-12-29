@@ -1,22 +1,69 @@
-import {View, StyleSheet, Image, Text, ScrollView} from "react-native";
+import {View, StyleSheet, Image, Text, FlatList, Dimensions} from "react-native";
 import Layout from "../components/Layout";
 import CalendarComponent from "./MainScreenComponents/CalendarComponent";
 import RequestComponent from "./MainScreenComponents/RequestComponent";
+import {useEffect, useState, useCallback} from "react";
+import * as SecureStore from 'expo-secure-store';
+import axios from "axios";
 
-export default function MainScreen () {
+const screenHeight = Dimensions.get("screen").height;
+
+export default function MainScreen ({route}) {
+    const {userId} = route.params
+
+    const [user, setUser] = useState({});
+    const [error, setError] = useState({});
+    const [requests, setRequests] = useState([]);
+
+    const fetchData = async (url, setData) => {
+        try {
+            const response = await axios.get(url, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${await SecureStore.getItemAsync('jwt_token')}`,
+                }
+            });
+            setData([])
+            setData(response.data);
+            console.log(response.data);
+        } catch (error) {
+            setError(error.response.data);
+            console.log(error.response.data);
+        }
+    }
+
+    const fetchRequestHandler = useCallback( () => {
+        const url = userId !== 0 ? `http://localhost:8080/requests/userRequests/${userId}` :
+            `http://localhost:8080/requests`;
+        fetchData(url, setRequests)
+    }, [userId])
+
+    const fetchUserHandler = useCallback(() => {
+        const url = userId !== 0 ? `http://localhost:8080/users/${userId}`
+            : `http://localhost:8080/getMyInfo`;
+        fetchData(url, setUser)
+    }, [userId])
+
+    useEffect(() => {
+        fetchUserHandler()
+    }, [userId])
+
+    useEffect(() => {
+        fetchRequestHandler()
+    }, [userId]);
 
     return (
         <Layout>
             <View style={styles.mainScreenContainer}>
                 <View style={styles.infoContainer}>
                     <View style={styles.imageNameAndPositionContainer}>
-                        <Image style={styles.image} source={require('../images/face7.png')} />
+                        <Image style={styles.image} source={{uri: user.image}} />
                         <View style={styles.namePositionContainer}>
-                            <Text style={styles.nameText}>Illia Kamarali</Text>
+                            <Text style={styles.nameText}>{user.firstName} {user.secondName}</Text>
                             <View style={styles.positionImageTitle}>
                                 <Image style={styles.positionImage} source={require('../images/position-light.png')}
                                        resizeMode="contain" />
-                                <Text style={styles.positionText}>Java Developer</Text>
+                                <Text style={styles.positionText}>{user.position}</Text>
                             </View>
                         </View>
                     </View>
@@ -25,14 +72,18 @@ export default function MainScreen () {
                         <View style={styles.calendarTitleBlock}>
                             <Text style={styles.calendarText}>Timeline</Text>
                         </View>
-                        <CalendarComponent/>
+                        <CalendarComponent userId={userId}/>
                     </View>
 
                     <View style={styles.requestContainer}>
                         <View style={styles.requestTitleBlock}>
                             <Text style={styles.requestText}>Active request</Text>
                         </View>
-                        <RequestComponent/>
+                        {error.message && (<Text style={styles.mainPageErrorRequestsText}>{error.message}</Text>)}
+                        <FlatList style={styles.mainPageRequestScroll} data={requests}
+                                  renderItem={({item}) => <RequestComponent request={item}/>}
+                                  ItemSeparatorComponent={<View style={styles.separator}/>}
+                        refreshing={true}/>
                     </View>
                 </View>
             </View>
@@ -113,4 +164,19 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontWeight: 'bold',
     },
+    mainPageErrorRequestsText: {
+        fontSize: 15,
+        paddingHorizontal: 15,
+        paddingVertical: 10,
+    },
+    mainPageRequestScroll: {
+        height: "auto",
+        maxHeight: screenHeight / 3,
+    },
+    separator: {
+        paddingHorizontal: 15,
+        height: 1,
+        backgroundColor: '#7c7c7c',
+        width: '100%'
+    }
 })

@@ -1,13 +1,17 @@
 import {View, StyleSheet, Image, Pressable, Text, Animated, Platform, Modal} from "react-native";
-import {useState, useRef} from "react";
+import {useState, useRef, useCallback, useEffect} from "react";
 import {useNavigation} from "@react-navigation/native";
 import {useDispatch} from "react-redux";
 import {logout} from "../store/authSilce";
 import AddRequestModal from "./AddRequestModal";
+import * as SecureStore from 'expo-secure-store'
+import axios from "axios";
 
 export default function Header() {
     const navigation = useNavigation();
     const dispatch = useDispatch();
+
+    const [user, setUser] = useState({});
 
     const [isIconsVisible, setIconsVisible] = useState(true);
     const [showModalAddRequest, setShowModalAddRequest] = useState(false);
@@ -32,13 +36,79 @@ export default function Header() {
 
     const animatedHeight = animationValue.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, 150],
+        outputRange: [0, 140],
+    });
+
+    const animatedHeightUser = animationValue.interpolate({
+        inputRange: [0, 1],
+        outputRange: [0, 50],
     });
 
     const animatedOpacity = animationValue.interpolate({
         inputRange: [0, 1],
         outputRange: [0, 1],
     });
+
+
+    const isAuthenticated = async () => {
+        const token = await SecureStore.getItemAsync('jwt_token')
+        return !!token
+    }
+
+    const fetchUserHandler = useCallback(async () => {
+        try {
+            const token = await SecureStore.getItemAsync('jwt_token')
+            const response = await axios.get(`http://localhost:8080/getMyInfo`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                }
+            })
+            console.log(response.data)
+            setUser(response.data)
+        } catch (error) {
+            console.log(error)
+        }
+    }, [])
+
+    useEffect(() => {
+        if (isAuthenticated()) {
+            fetchUserHandler()
+        }
+    }, [fetchUserHandler])
+
+    const inbox = () => {
+        if (isAuthenticated()) {
+            if (user.role !== 'ROLE_USER') {
+                return (
+                    <Pressable style={styles.inboxContainer} onPress={() => {
+                        console.log("Inbox")
+                        toggleIconsVisibility()
+                        navigation.navigate("Inbox");
+                    }}>
+                        <Image style={styles.icon} source={require('../images/inbox_icon.png')} resizeMode="contain"/>
+                        <Text style={styles.iconText}>Inbox</Text>
+                    </Pressable>
+                )
+            }
+        }
+    }
+
+    const team = () => {
+        if (isAuthenticated()) {
+            if (user.role !== 'ROLE_USER') {
+                return (
+                    <Pressable style={styles.teamContainer} onPress={() => {
+                        console.log("Team")
+                        toggleIconsVisibility()
+                        navigation.navigate("Team");
+                    }}>
+                        <Image style={styles.icon} source={require('../images/team_icon.png')} resizeMode="contain"/>
+                        <Text style={styles.iconText}>Team</Text>
+                    </Pressable>
+                )
+            }
+        }
+    }
 
     return (
         <View style={styles.headerContainer}>
@@ -67,25 +137,13 @@ export default function Header() {
             <Animated.View
                 style={[
                     styles.headerIcons,
-                    {height: animatedHeight, opacity: animatedOpacity},
+                    {height: user.role !== 'ROLE_USER' ? animatedHeight : animatedHeightUser, opacity: animatedOpacity},
                 ]}
             >
-                <Pressable style={styles.inboxContainer} onPress={() => {
-                    console.log("Inbox")
-                    toggleIconsVisibility()
-                    navigation.navigate("Inbox");
-                }}>
-                    <Image style={styles.icon} source={require('../images/inbox_icon.png')} resizeMode="contain"/>
-                    <Text style={styles.iconText}>Inbox</Text>
-                </Pressable>
-                <Pressable style={styles.teamContainer} onPress={() => {
-                    console.log("Team")
-                    toggleIconsVisibility()
-                    navigation.navigate("Team");
-                }}>
-                    <Image style={styles.icon} source={require('../images/team_icon.png')} resizeMode="contain"/>
-                    <Text style={styles.iconText}>Team</Text>
-                </Pressable>
+                {inbox()}
+
+                {team()}
+
                 <Pressable style={styles.logoutContainer} onPress={async () => {
                     console.log("Logout")
                     toggleIconsVisibility()

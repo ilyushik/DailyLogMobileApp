@@ -1,10 +1,29 @@
 import {View, StyleSheet, Text, Pressable, Image} from "react-native";
+import * as SecureStore from "expo-secure-store";
 
-export default function InboxRequestComponent() {
+export default function InboxRequestComponent(props) {
+
+    const calculateDifference = (startDate, endDate) => {
+        const firstDate = new Date(startDate[0], startDate[1] - 1, startDate[2]); // Год, месяц (от 0), день
+        const secondDate = new Date(endDate[0], endDate[1] - 1, endDate[2]);
+
+        const timeDifference = Math.abs(secondDate - firstDate);
+        const days = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+        if (days === 0) {
+            return "1 day";
+        }
+
+        if (days === 1) {
+            return "2 days";
+        }
+
+        return `${days + 1} days`;
+    };
+
     return (
-        <View style={styles.inboxRequestComponentContainer}>
-            <Text style={styles.inboxRequestComponentContainerText}>You have received a request for sick leave from
-                <Text style={styles.inboxRequestComponentContainerEmail}> kamaraliilya@gmail.com</Text></Text>
+        <View style={styles.inboxRequestComponentContainer} key={props.request.id}>
+            <Text style={styles.inboxRequestComponentContainerText}>You have received a request for {props.request.reason} from
+                <Text style={styles.inboxRequestComponentContainerEmail}> {props.request.fullUserName}</Text></Text>
 
             <View style={styles.inboxRequestComponentContainerDuration}>
                 <View style={styles.inboxRequestComponentContainerDurationTitles}>
@@ -14,18 +33,22 @@ export default function InboxRequestComponent() {
                 </View>
 
                 <View style={styles.inboxRequestComponentContainerDurationValues}>
-                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>December 23, 2024</Text>
-                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>December 27, 2024</Text>
-                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>5 days</Text>
+                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>{props.request.startDate[2]}-{props.request.startDate[1]}-{props.request.startDate[0]}</Text>
+                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>{props.request.finishDate[2]}-{props.request.finishDate[1]}-{props.request.finishDate[0]}</Text>
+                    <Text style={styles.inboxRequestComponentContainerDurationValuesText}>{calculateDifference(props.request.startDate, props.request.finishDate)}</Text>
                 </View>
             </View>
 
             <View style={styles.inboxRequestComponentContainerActionButtons}>
-                <Pressable>
+                <Pressable onPress={() => {
+                    props.approve(props.request.id);
+                }}>
                     <Image style={styles.actionButton} source={require('../../images/approve.png')} />
                 </Pressable>
 
-                <Pressable>
+                <Pressable onPress={() => {
+                    props.decline(props.request.id);
+                }}>
                     <Image style={styles.actionButton} source={require('../../images/decline.png')} />
                 </Pressable>
             </View>

@@ -1,6 +1,6 @@
 import {View, StyleSheet, Text} from "react-native";
 
-export default function RequestComponent() {
+export default function RequestComponent(props) {
     const requestStatus = (status) => {
         if (status === 'Approved') {
             return (<Text style={styles.requestComponentDurationStatusValuesApproved}>Approved</Text>)
@@ -13,9 +13,26 @@ export default function RequestComponent() {
         }
     }
 
+    const calculateDifference = (startDate, endDate) => {
+        const firstDate = new Date(startDate[0], startDate[1] - 1, startDate[2]); // Год, месяц (от 0), день
+        const secondDate = new Date(endDate[0], endDate[1] - 1, endDate[2]);
+
+        const timeDifference = Math.abs(secondDate - firstDate);
+        const days = Math.ceil(timeDifference / (1000 * 60 * 60 * 24));
+        if (days === 0) {
+            return "1 day";
+        }
+
+        if (days === 1) {
+            return "2 days";
+        }
+
+        return `${days + 1} days`;
+    };
+
     return (
-        <View style={styles.requestComponentContainer}>
-            <Text style={styles.reason}>Annual Leave</Text>
+        <View style={styles.requestComponentContainer} key={props.request.id}>
+            <Text style={styles.reason}>{props.request.reason}</Text>
             <View style={styles.requestComponentDurationStatusContainer}>
                 <View style={styles.requestComponentDurationStatusTitles}>
                     <Text style={styles.requestComponentDurationStatusTitlesText}>Start:</Text>
@@ -24,10 +41,10 @@ export default function RequestComponent() {
                     <Text style={styles.requestComponentDurationStatusTitlesText}>Status:</Text>
                 </View>
                 <View style={styles.requestComponentDurationStatusValues}>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>December 23, 2024</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>December 27, 2024</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>5 days</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>{requestStatus('Pending')}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.startDate[2]}-{props.request.startDate[1]}-{props.request.startDate[0]}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.finishDate[2]}-{props.request.finishDate[1]}-{props.request.finishDate[0]}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{calculateDifference(props.request.startDate, props.request.finishDate)}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{requestStatus(props.request.status)}</Text>
                 </View>
             </View>
         </View>

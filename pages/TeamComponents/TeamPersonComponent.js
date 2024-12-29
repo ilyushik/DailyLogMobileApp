@@ -1,25 +1,32 @@
-import {View, StyleSheet, Image, Text} from "react-native";
+import {View, StyleSheet, Image, Text, Pressable} from "react-native";
+import {useNavigation} from "@react-navigation/native";
 
 export default function TeamPersonComponent(props) {
+    const navigation = useNavigation();
+
+    const navigationLink = () => {
+        navigation.navigate("MainScreen", {userId: props.user.id});
+    }
+
     return (
-        <View style={styles.teamPersonFullContainer}>
+        <View style={styles.teamPersonFullContainer} key={props.user.id}>
             <View style={styles.imageNamePositionContainer}>
-                <Image style={styles.teamPersonImage} source={require('../../images/face7.png')} resizeMode={'cover'} />
+                <Image style={styles.teamPersonImage} source={{uri: props.user.image}} resizeMode={'cover'} />
 
                 <View style={styles.teamPersonNamePositionContainer}>
-                    <Text style={styles.nameTeamContainer}>Illia Kamarali</Text>
+                    <Text style={styles.nameTeamContainer}>{props.user.firstName} {props.user.secondName}</Text>
 
                     <View style={styles.imagePositionContainer}>
                         <Image style={styles.positionImageTeamContainer} source={require('../../images/position-light.png')}
                                resizeMode={'cover'} />
-                        <Text style={styles.positionTitleTeamContainer}>Java Developer</Text>
+                        <Text style={styles.positionTitleTeamContainer}>{props.user.position}</Text>
                     </View>
                 </View>
             </View>
 
-            <View style={styles.teamPersonLink}>
+            <Pressable style={styles.teamPersonLink} onPress={() => navigationLink()}>
                 <Text style={styles.teamPersonLinkText}>More</Text>
-            </View>
+            </Pressable>
         </View>
     )
 }
