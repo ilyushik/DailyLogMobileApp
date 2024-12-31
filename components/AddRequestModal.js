@@ -1,7 +1,9 @@
 import {View, Text, StyleSheet, TextInput, Pressable, Platform, TouchableOpacity} from "react-native";
 import {Dropdown} from "react-native-element-dropdown";
-import {useState} from "react";
+import {useCallback, useEffect, useState} from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import axios from "axios";
+import * as SecureStore from "expo-secure-store";
 
 const reasons = [
     {
@@ -19,7 +21,10 @@ const reasons = [
 ]
 
 export default function AddRequestModal(props) {
-    // const [reasons, setReasons] = useState([]);
+    const [reasonsDB, setReasonsDB] = useState([]);
+    const [startDateDB, setStartDateDB] = useState(new Date());
+    const [endDateDB, setEndDateDB] = useState(new Date());
+
     const [reasonValue, setReasonValue] = useState("");
     const [isFocused, setFocused] = useState(false);
     const [date, setDate] = useState(new Date());
@@ -39,23 +44,25 @@ export default function AddRequestModal(props) {
     }
 
     const formatDate = (rawDate) => {
-        let date = new Date(rawDate);
+        const date = new Date(rawDate);
 
-        let year = date.getFullYear();
-        let month = date.getMonth() + 1;
-        let day = date.getDate();
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Ensure two digits for month
+        const day = String(date.getDate()).padStart(2, '0');       // Ensure two digits for day
 
-        return `${day}-${month}-${year}`;
-    }
+        return `${year}-${month}-${day}`;
+    };
+
 
     const onChangeStart = ({type}, selectedDate) => {
         if (type === "set") {
-            const currentDate = selectedDate;
+            const currentDate = selectedDate
             setDate(currentDate);
 
             if (Platform.OS === 'android') {
                 toggleDatePicker()
-                setStartDate(formatDate(currentDate));
+                setStartDate(formatDate(date));
+                setStartDateDB(date)
             }
         } else {
             toggleDatePicker()
@@ -69,7 +76,8 @@ export default function AddRequestModal(props) {
 
             if (Platform.OS === 'android') {
                 toggleEndDatePicker()
-                setEndDate(formatDate(currentDate));
+                setEndDate(formatDate(date));
+                setEndDateDB(date)
             }
         } else {
             toggleEndDatePicker()
@@ -77,15 +85,42 @@ export default function AddRequestModal(props) {
     }
 
     const confirmIOSStartDate = () => {
+        setStartDateDB(date)
         setStartDate(formatDate(date))
         toggleDatePicker()
     }
     const confirmIOSEndDate = () => {
+        setEndDateDB(date);
         setEndDate(formatDate(date))
         toggleEndDatePicker()
     }
 
-    const submitRequest = () => {
+    const fetchUserHandler = async () => {
+        try {
+            const response = await axios.get(`http://localhost:8080/reasons`, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${await SecureStore.getItemAsync('jwt_token')}`
+                }
+            })
+
+            console.log(response.data);
+            setReasonsDB(response.data);
+        } catch (e) {
+            console.log(e.response.data)
+            setError(e.response.data);
+        }
+    }
+
+    const fetchUsers = useCallback(() => {
+        fetchUserHandler();
+    }, [])
+
+    useEffect(() => {
+        fetchUsers()
+    }, []);
+
+    const submitRequest = async () => {
         if (startDate.trim().length < 1) {
             setError({startDate: 'Field should not be empty'});
             console.log(`Start date: Field should not be empty`);
@@ -105,13 +140,36 @@ export default function AddRequestModal(props) {
 
         const request = {
             reason: reasonValue,
-            startDate: startDate,
-            endDate: endDate,
+            startDate: startDateDB,
+            finishDate: endDateDB,
             comment: comment
         }
 
-        console.log(request);
-        props.closeModal()
+        console.log(request)
+
+        try {
+            const response = await axios.post(`http://localhost:8080/addRequest`, {
+                reason: reasonValue,
+                startDate: startDateDB,
+                finishDate: endDateDB,
+                comment: comment
+            }, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${await SecureStore.getItemAsync('jwt_token')}`
+                }
+            })
+
+            console.log(response.data);
+
+            console.log(request);
+            props.closeModal()
+        } catch (e) {
+            console.log(e.response.data)
+            setError(e.response.data);
+        }
+
+
     }
 
     return(
@@ -120,11 +178,12 @@ export default function AddRequestModal(props) {
                 <Text style={styles.addRequestTitle}>Create request</Text>
             </View>
 
-            <Dropdown style={styles.dropdown} placeholder="Select reason" data={reasons} labelField="label"
-                      valueField="value" onChange={reason => {
-                setReasonValue(reason.value)
+            <Dropdown style={styles.dropdown} placeholder="Select reason" data={reasonsDB} labelField="reason"
+                      valueField="reason" onChange={reason => {
+                setReasonValue(reason.reason)
                 setFocused(false)
             }}/>
+
             <View style={styles.dateInputContainer}>
                 <Text style={styles.dateInputContainerTitle}>Start</Text>
 

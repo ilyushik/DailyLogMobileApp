@@ -14,9 +14,11 @@ export default function MainScreen ({route}) {
     const [user, setUser] = useState({});
     const [error, setError] = useState({});
     const [requests, setRequests] = useState([]);
+    const [refreshing, setRefreshing] = useState(false);
 
     const fetchData = async (url, setData) => {
         try {
+            setRefreshing(true);
             const response = await axios.get(url, {
                 headers: {
                     "Content-Type": "application/json",
@@ -25,7 +27,9 @@ export default function MainScreen ({route}) {
             });
             setData([])
             setData(response.data);
-            console.log(response.data);
+            setRefreshing(false);
+            // console.log(response.data);
+            setError({})
         } catch (error) {
             setError(error.response.data);
             console.log(error.response.data);
@@ -46,11 +50,11 @@ export default function MainScreen ({route}) {
 
     useEffect(() => {
         fetchUserHandler()
-    }, [userId])
+    }, [fetchUserHandler])
 
     useEffect(() => {
         fetchRequestHandler()
-    }, [userId]);
+    }, [requests]);
 
     return (
         <Layout>
@@ -83,7 +87,8 @@ export default function MainScreen ({route}) {
                         <FlatList style={styles.mainPageRequestScroll} data={requests}
                                   renderItem={({item}) => <RequestComponent request={item}/>}
                                   ItemSeparatorComponent={<View style={styles.separator}/>}
-                        refreshing={true}/>
+                                  refreshing={refreshing}
+                        onRefresh={fetchRequestHandler}/>
                     </View>
                 </View>
             </View>

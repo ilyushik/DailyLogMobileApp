@@ -47,6 +47,7 @@ export default function CalendarComponent(props) {
                 [{text: "OK"}]
             );
         } else {
+            // open popup form
             Alert.alert("No Report", `No report found for ${day.dateString}`, [{text: "OK"}]);
         }
     };

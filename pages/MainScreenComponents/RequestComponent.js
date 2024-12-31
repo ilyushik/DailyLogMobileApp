@@ -14,7 +14,7 @@ export default function RequestComponent(props) {
     }
 
     const calculateDifference = (startDate, endDate) => {
-        const firstDate = new Date(startDate[0], startDate[1] - 1, startDate[2]); // Год, месяц (от 0), день
+        const firstDate = new Date(startDate[0], startDate[1] - 1, startDate[2]);
         const secondDate = new Date(endDate[0], endDate[1] - 1, endDate[2]);
 
         const timeDifference = Math.abs(secondDate - firstDate);
@@ -41,10 +41,14 @@ export default function RequestComponent(props) {
                     <Text style={styles.requestComponentDurationStatusTitlesText}>Status:</Text>
                 </View>
                 <View style={styles.requestComponentDurationStatusValues}>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.startDate[2]}-{props.request.startDate[1]}-{props.request.startDate[0]}</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.finishDate[2]}-{props.request.finishDate[1]}-{props.request.finishDate[0]}</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>{calculateDifference(props.request.startDate, props.request.finishDate)}</Text>
-                    <Text style={styles.requestComponentDurationStatusValuesText}>{requestStatus(props.request.status)}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.startDate[0]}-
+                        {props.request.startDate[1]}-{props.request.startDate[2]}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>{props.request.finishDate[0]}-
+                        {props.request.finishDate[1]}-{props.request.finishDate[2]}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>
+                        {calculateDifference(props.request.startDate, props.request.finishDate)}</Text>
+                    <Text style={styles.requestComponentDurationStatusValuesText}>
+                        {requestStatus(props.request.status)}</Text>
                 </View>
             </View>
         </View>

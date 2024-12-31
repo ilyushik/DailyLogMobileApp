@@ -99,7 +99,8 @@ export default function Inbox() {
                                       <InboxRequestComponent request={item} approve={() => approveRequest(item.id)}
                                                                                  decline={() => declineRequest(item.id)}/>}
                                   ItemSeparatorComponent={<View style={styles.inboxSeparator} />}
-                                  refreshing={true}/>
+                                  refreshing={true}
+                        onRefresh={fetchRequests}/>
                     </View>
                 </View>
             </View>
