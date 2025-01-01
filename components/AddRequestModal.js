@@ -25,7 +25,7 @@ export default function AddRequestModal(props) {
     const [startDateDB, setStartDateDB] = useState(new Date());
     const [endDateDB, setEndDateDB] = useState(new Date());
 
-    const [reasonValue, setReasonValue] = useState("");
+    const [reasonValue, setReasonValue] = useState(null);
     const [isFocused, setFocused] = useState(false);
     const [date, setDate] = useState(new Date());
     const [startDate, setStartDate] = useState("");
@@ -184,6 +184,8 @@ export default function AddRequestModal(props) {
                 setFocused(false)
             }}/>
 
+            {error.reason && (<Text style={styles.addRequestError}>{error.reason}</Text>)}
+
             <View style={styles.dateInputContainer}>
                 <Text style={styles.dateInputContainerTitle}>Start</Text>
 
@@ -210,6 +212,8 @@ export default function AddRequestModal(props) {
                     </View>
                 )}
             </View>
+
+            {error.startDate && (<Text style={styles.addRequestError}>{error.startDate}</Text>)}
 
             <View style={styles.dateInputContainer}>
                 <Text style={styles.dateInputContainerTitle}>End</Text>
@@ -238,11 +242,17 @@ export default function AddRequestModal(props) {
                 )}
             </View>
 
+            {error.endDate && (<Text style={styles.addRequestError}>{error.endDate}</Text>)}
+
             <View style={styles.commentInputContainer}>
                 <Text style={styles.commentInputContainerTitle}>Comment</Text>
                 <TextInput style={styles.commentInput} placeholder="Text..." value={comment} onChangeText={setComment}
                            multiline={true}/>
             </View>
+
+            {error.errorDate && (<Text style={styles.addRequestError}>{error.errorDate}</Text>)}
+            {error.message && (<Text style={styles.addRequestError}>{error.message}</Text>)}
+            {error.comment && (<Text style={styles.addRequestError}>{error.comment}</Text>)}
 
             <View style={styles.mainActionButton}>
                 <Pressable style={styles.submitRequestButton} onPress={submitRequest}>
@@ -347,4 +357,10 @@ const styles = StyleSheet.create({
         fontWeight: 600,
         textAlign: 'center'
     },
+    addRequestError: {
+        alignSelf: "center",
+        color: 'red',
+        fontSize: 15,
+        paddingVertical: 5
+    }
 })

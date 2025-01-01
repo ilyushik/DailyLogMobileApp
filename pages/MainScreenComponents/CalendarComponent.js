@@ -1,16 +1,20 @@
-import React, {useEffect, useState} from "react";
-import {View, StyleSheet, Alert} from "react-native";
+import React, {useEffect, useRef, useState} from "react";
+import {View, StyleSheet, Alert, Text, Modal, Image, Pressable} from "react-native";
 import {Calendar} from "react-native-calendars";
 import axios from "axios";
 import {useSelector} from "react-redux";
 import {useRoute} from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
+import ReportRequestInfoModal from "../../components/ReportRequestInfoModal";
 
 export default function CalendarComponent(props) {
     const route = useRoute();
     // const mode = useSelector(state => state.theme.theme);
     const mode = "light"
-    const [reports, setReports] = useState({}); // Storing reports in a keyed object for easier lookup
+    const [reports, setReports] = useState({});
+
+    const [reportModalIsOpen, setReportModalIsOpen] = useState(false);
+    const [concreteReport, setConcreteReport] = useState({});
 
     const fetchReports = async () => {
         const url = props.userId
@@ -40,17 +44,22 @@ export default function CalendarComponent(props) {
     const handleDayPress = (day) => {
         const report = reports[day.dateString];
         if (report) {
-            // open popup with all data
-            Alert.alert(
-                "Report Details",
-                `Status: ${report.status}\nDate: ${day.dateString}`,
-                [{text: "OK"}]
-            );
+            setConcreteReport(reports[day.dateString]);
+            console.log(concreteReport)
+            openModal()
         } else {
             // open popup form
             Alert.alert("No Report", `No report found for ${day.dateString}`, [{text: "OK"}]);
         }
     };
+
+    const openModal = () => {
+        setReportModalIsOpen(true)
+    }
+
+    const closeModal = () => {
+        setReportModalIsOpen(false)
+    }
 
     return (
         <View style={[styles.calendarContainer, mode === "dark" ? styles.darkTheme : styles.lightTheme]}>
@@ -79,6 +88,10 @@ export default function CalendarComponent(props) {
                     monthTextColor: mode === "dark" ? "#fff" : "#000",
                 }}
             />
+
+            <Modal transparent={true} animationType="slide" visible={reportModalIsOpen} onRequestClose={closeModal}>
+                <ReportRequestInfoModal closeModal={closeModal} report={concreteReport}/>
+            </Modal>
         </View>
     );
 }
