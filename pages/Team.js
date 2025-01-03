@@ -88,6 +88,9 @@ const styles = StyleSheet.create({
     teamInfoContainer: {
         position: "relative",
         marginTop: -30,
+        backgroundColor: '#fff',
+        borderTopRightRadius: 10,
+        borderTopLeftRadius: 10
     },
     teamInfoContainerTitle: {
         paddingHorizontal: 15,

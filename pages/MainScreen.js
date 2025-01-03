@@ -49,12 +49,14 @@ export default function MainScreen ({route}) {
     }, [userId])
 
     useEffect(() => {
-        fetchUserHandler()
-    }, [fetchUserHandler])
+        fetchUserHandler();
+    }, [fetchUserHandler]);
+
 
     useEffect(() => {
-        fetchRequestHandler()
-    }, [requests]);
+        fetchRequestHandler();
+    }, [fetchRequestHandler]);
+
 
     return (
         <Layout>

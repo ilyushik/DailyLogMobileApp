@@ -115,7 +115,7 @@ export default function Header() {
             <View style={styles.header}>
                 <Pressable onPress={() => {
                     console.log("Main page")
-                    navigation.navigate('MainScreen')
+                    navigation.navigate('MainScreen', {userId: 0})
                 }}>
                     <Image style={styles.logo} source={require('../images/logo 2.png')} resizeMode="contain"/>
                 </Pressable>

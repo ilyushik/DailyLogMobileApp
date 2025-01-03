@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from "react";
+import React, {useEffect, useCallback, useState} from "react";
 import {View, StyleSheet, Alert, Text, Modal, Image, Pressable} from "react-native";
 import {Calendar} from "react-native-calendars";
 import axios from "axios";
@@ -6,6 +6,7 @@ import {useSelector} from "react-redux";
 import {useRoute} from "@react-navigation/native";
 import * as SecureStore from "expo-secure-store";
 import ReportRequestInfoModal from "../../components/ReportRequestInfoModal";
+import ReportFormModal from "../../components/ReportFormModal";
 
 export default function CalendarComponent(props) {
     const route = useRoute();
@@ -15,8 +16,9 @@ export default function CalendarComponent(props) {
 
     const [reportModalIsOpen, setReportModalIsOpen] = useState(false);
     const [concreteReport, setConcreteReport] = useState({});
+    const [reportFormModalIsOpen, setReportFormModalIsOpen] = useState(false);
 
-    const fetchReports = async () => {
+    const fetchReports = useCallback(async () => {
         const url = props.userId
             ? `http://localhost:8080/report/usersReports/${props.userId}`
             : `http://localhost:8080/report/usersReports`;
@@ -32,24 +34,27 @@ export default function CalendarComponent(props) {
                 reportsByDate[report.date.join("-")] = report; // Format: YYYY-MM-DD
             });
             setReports(reportsByDate);
+            console.log(response.data);
         } catch (error) {
             console.error("Error fetching reports:", error);
         }
-    };
+    }, [props.userId]);
 
     useEffect(() => {
         fetchReports();
-    }, [props.userId]);
+    }, [fetchReports]);
+
+
 
     const handleDayPress = (day) => {
         const report = reports[day.dateString];
         if (report) {
             setConcreteReport(reports[day.dateString]);
-            console.log(concreteReport)
             openModal()
         } else {
             // open popup form
-            Alert.alert("No Report", `No report found for ${day.dateString}`, [{text: "OK"}]);
+            // Alert.alert("No Report", `No report found for ${day.dateString}`, [{text: "OK"}]);
+            openFormModal()
         }
     };
 
@@ -59,6 +64,14 @@ export default function CalendarComponent(props) {
 
     const closeModal = () => {
         setReportModalIsOpen(false)
+    }
+
+    const openFormModal = () => {
+        setReportFormModalIsOpen(true)
+    }
+
+    const closeFormModal = () => {
+        setReportFormModalIsOpen(false)
     }
 
     return (
@@ -91,6 +104,10 @@ export default function CalendarComponent(props) {
 
             <Modal transparent={true} animationType="slide" visible={reportModalIsOpen} onRequestClose={closeModal}>
                 <ReportRequestInfoModal closeModal={closeModal} report={concreteReport}/>
+            </Modal>
+
+            <Modal transparent={true} animationType="slide" visible={reportFormModalIsOpen} onRequestClose={closeFormModal}>
+                <ReportFormModal closeModal={closeFormModal} loadReports={fetchReports}/>
             </Modal>
         </View>
     );
